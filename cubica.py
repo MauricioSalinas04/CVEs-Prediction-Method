@@ -65,7 +65,7 @@ def printMatrix(matriz):
         print()
     print()
 
-def main():
+def getPredictions(valores_x, valores_y, a, b):
     # Crear arreglos con datos historicos
     valores_x = list(range(1999, 2024))
     valores_y = [
@@ -75,7 +75,7 @@ def main():
     ]
 
     # Inicializar valores de x para prediccion
-    valores_prediccion = list(range(2024, 2034))
+    valores_prediccion = list(range(a, b))
 
     # Lista para almacenar g(x)
     valores_gx = []
@@ -109,14 +109,5 @@ def main():
     # Imprimir los conjuntos
     imprimirConjuntos(valores_x, valores_y, valores_gx)
 
-    # Creacion Linea Azul (Funcion Original)
-    plt.plot(valores_x, valores_y)
-
-    # Creacion Linea Naranja (Funcion Ajustada)
-    plt.plot(valores_x + valores_prediccion, valores_gx)
-
-    # Mostrar el gráfico
-    plt.show()
-
-if __name__ == "__main__":
-    main()
+    # Retornar Predicciones
+    return valores_gx, valores_prediccion
