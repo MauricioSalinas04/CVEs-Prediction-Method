@@ -77,7 +77,7 @@ def limpiar_tabla():
     for widget in frame.winfo_children():
         if int(widget.grid_info()["row"]) > 0:  # Verificar si el widget está en una fila > 0
             widget.destroy()
-    actualizar_graficas([], [])
+    actualizar_graficas([], [], [], [])
 
 def crear_tabla(valores_x, valores_y):
 
@@ -154,38 +154,34 @@ def crear_tabla(valores_x, valores_y):
         data[9].append((coeficientes[9][0] + coeficientes[9][1]*x + coeficientes[9][2]*(x**2) + coeficientes[9][3]*(math.tan(x))))
         data[10].append((coeficientes[10][0] + coeficientes[10][1]*x + coeficientes[10][2]*(x**2) + coeficientes[10][3]*(math.log(x))))
 
-    # Crear un Canvas y un Frame para las tablas
-    canvas = tk.Canvas(frame_arriba)
-    scroll_y = tk.Scrollbar(root, orient='vertical', command=canvas.yview)
+    # Crear el control de pestañas (notebook)
+    notebook = ttk.Notebook(frame_arriba)
+    notebook.pack(fill="both", expand=True, padx=10, pady=10)
 
-    frame = tk.Frame(canvas)
-
-    # Configurar el Canvas y el Frame con la barra de desplazamiento
-    frame_id = canvas.create_window(0, 0, anchor='nw', window=frame)
-    canvas.configure(yscrollcommand=scroll_y.set)
-
-    create_first_table(frame, "Datos Historicos Originales", 1, valores_x, valores_y)
-
-    primera_iteracion = True  # Variable de bandera para la primera iteracion
+    # Crear las páginas del dashboard
+    pages = []
     selected = None
-    # Iterar sobre la lista de modelos y R² y crear una tabla para cada uno
+    primera_iteracion = True
+
+    # Crear la primera pestaña fuera del ciclo
+    primera_pestaña = ttk.Frame(notebook)
+    notebook.add(primera_pestaña, text="Original")
+    create_first_table(primera_pestaña, "Datos Historicos Originales", 1, valores_x, valores_y)
+
+    # Iterar sobre las páginas y modelos comenzando desde el segundo elemento
     for nombre, r2 in r2_list:
+        pestaña = ttk.Frame(notebook)
+        notebook.add(pestaña, text=nombre)
+
         if primera_iteracion:
             selected = nombre
-            create_table(frame, nombre, r2, valores_x, valores_ecuaciones[nombre])
-            primera_iteracion = False  # Cambia la bandera después de la primera iteracion
+            create_table(pestaña, nombre, r2, valores_x, valores_ecuaciones[nombre])
+            primera_iteracion = False
         else:
-            create_table(frame, nombre, r2, valores_x, valores_ecuaciones[nombre])
-
-    # Actualizar la configuración del canvas para que se ajuste a los contenidos del frame
-    frame.update_idletasks()
-    canvas.config(scrollregion=canvas.bbox('all'))
-
-    # Empaquetar el canvas y el scrollbar
-    canvas.pack(fill='both', expand=True, side='left')
-    scroll_y.pack(fill='y', side='right')
-
+            create_table(pestaña, nombre, r2, valores_x, valores_ecuaciones[nombre])
+    
     actualizar_graficas(valores_x, valores_y, valores_prediccion, valores_ecuaciones[selected])
+
 
 def create_table(frame, nombre, r2, valores_x, values):
     # Crear un marco para contener el nombre, r2 y la tabla
@@ -257,12 +253,12 @@ def create_first_table(frame, nombre, r2, valores_x, values):
 
 def actualizar_graficas(valores_x, valores_y, valores_prediccion, valores_gx):
     # Actualizar datos de las gráficas
-    ax1.clear()
-    ax1.bar(valores_x, valores_y)
-    ax1.bar(valores_x + valores_prediccion, valores_gx)
-    ax1.set_title("Prediccion de CVEs")
-    ax1.set_xlabel("Años")
-    ax1.set_ylabel("CVEs")
+    ax4.clear()
+    ax4.bar(valores_x, valores_y)
+    ax4.bar(valores_x + valores_prediccion, valores_gx)
+    ax4.set_title("Prediccion de CVEs")
+    ax4.set_xlabel("Años")
+    ax4.set_ylabel("CVEs")
 
     ax2.clear()
     ax2.scatter(valores_x, valores_y)
@@ -278,13 +274,13 @@ def actualizar_graficas(valores_x, valores_y, valores_prediccion, valores_gx):
     ax3.set_xlabel("Años")
     ax3.set_ylabel("CVEs")
 
-    ax4.clear()
-    ax4.plot(valores_x, valores_y)
+    ax1.clear()
+    ax1.plot(valores_x, valores_y)
     # Creacion Linea Naranja (Funcion Ajustada)
-    ax4.plot(valores_x + valores_prediccion, valores_gx)
-    ax4.set_title("Prediccion de CVEs")
-    ax4.set_xlabel("Años")
-    ax4.set_ylabel("CVEs")
+    ax1.plot(valores_x + valores_prediccion, valores_gx)
+    ax1.set_title("Prediccion de CVEs")
+    ax1.set_xlabel("Años")
+    ax1.set_ylabel("CVEs")
 
     # Redibujar los widgets de lienzo
     canvas1.draw()
@@ -342,7 +338,7 @@ boton_Input.pack(fill="both", expand=True)
 boton_Predictions = tk.Button(bar_frame, text="Predicciones", command=lambda: cambiar_pagina(pagina3))
 boton_Predictions.pack(fill="both", expand=True)
 # Crear el botón Import
-boton_import = tk.Button(bar_frame, text="Exportar", command=lambda: cambiar_pagina(pagina4))
+boton_import = tk.Button(bar_frame, text="Exportar", command=exportar_a_pdf)
 boton_import.pack(fill="both", expand=True)
 # Crear el botón eXIT
 boton_Exit = tk.Button(bar_frame, text="Salir", background="red", command=on_closing)
@@ -440,17 +436,6 @@ notebookGraphs.add(pagina3G, text="G3")
 notebookGraphs.add(pagina4G, text="G4")
 
 notebookGraphs.pack(fill="both", expand=True)
-
-# IMPORT DESIGN ##############################################################################
-# Crear un frame para contener los checkboxes y el botón
-frame_exportar = tk.Frame(pagina4)
-frame_exportar.pack(fill="both", expand=True, padx=20, pady=20)
-
-# Crear un botón para exportar a PDF
-boton_exportar = tk.Button(frame_exportar, text="Exportar a PDF", command=exportar_a_pdf)
-boton_exportar.pack(fill="both", expand=True)
-
-############
 
 # Crear los subplots
 fig1, ax1 = plt.subplots()
