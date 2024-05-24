@@ -20,7 +20,7 @@ def montante(matriz):
 
 	print()
 	print("Matriz final\n\n" + str(matriz))
-
+	print("FILAS:" + str(filas))
 	for i in range(filas):
 		nuevaVariable = matriz[i][filas] / matriz[i][i] # Dividir elemento de diagonal principal entre resultado
 		variables.append(nuevaVariable) # Agregar a lista de variables

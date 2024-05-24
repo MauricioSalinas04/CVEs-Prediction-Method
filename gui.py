@@ -1,9 +1,11 @@
 import tkinter as tk
+import math
 from tkinter import ttk, filedialog
 from tkinter.scrolledtext import ScrolledText
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from sklearn.metrics import r2_score
 from cubica import getPredictions
 
 #########################################################################################
@@ -79,20 +81,179 @@ def limpiar_tabla():
 
 def crear_tabla(valores_x, valores_y):
 
-    valores_gx, valores_prediccion = getPredictions(valores_x, valores_y, 2024, 2034)
-    # Configurar las columnas
-    frame.columnconfigure(0, weight=1)
-    frame.columnconfigure(1, weight=1)
+    # Retorna lista con los siguientes valores [[v,v,v,v,v,v,v,v,v],]
+    data, coeficientes = getPredictions(valores_x, valores_y)
 
-    # Agregar filas de datos historicos
-    for number in range(len(valores_x)):
-        l = tk.Label(frame, text=valores_x[number])
-        l.grid(row=number+1, column=0, sticky='w')  # Alineado hacia la izquierda
-        l = tk.Label(frame, text=valores_y[number])
-        l.grid(row=number+1, column=1, sticky='w')  # Alineado hacia la izquierda
-    
-    
-    actualizar_graficas(valores_x, valores_y, valores_prediccion, valores_gx)
+    # Calcula R^2 para cada conjunto de valores
+    r2_lineal = r2_score(valores_y, data[0])
+    r2_cuadratica = r2_score(valores_y, data[1])
+    r2_cubica = r2_score(valores_y, data[2])
+    r2_linealSen = r2_score(valores_y, data[3])
+    r2_linealCos = r2_score(valores_y, data[4])
+    r2_linealTg = r2_score(valores_y, data[5])
+    r2_linealLn = r2_score(valores_y, data[6])
+    r2_cuadraticaSen = r2_score(valores_y, data[7])
+    r2_cuadraticaCos = r2_score(valores_y, data[8])
+    r2_cuadraticaTg = r2_score(valores_y, data[9])
+    r2_cuadraticaLn = r2_score(valores_y, data[10])
+
+    r2_values = {
+    'Lineal': r2_lineal,
+    'Cuadrática': r2_cuadratica,
+    'Cúbica': r2_cubica,
+    'Lineal Seno': r2_linealSen,
+    'Lineal Coseno': r2_linealCos,
+    'Lineal Tangente': r2_linealTg,
+    'Lineal Logaritmo': r2_linealLn,
+    'Cuadrática Seno': r2_cuadraticaSen,
+    'Cuadrática Coseno': r2_cuadraticaCos,
+    'Cuadrática Tangente': r2_cuadraticaTg,
+    'Cuadrática Logaritmo': r2_cuadraticaLn
+    }
+
+    valores_ecuaciones = {
+    'Lineal': data[0],
+    'Cuadrática': data[1],
+    'Cúbica': data[2],
+    'Lineal Seno': data[3],
+    'Lineal Coseno': data[4],
+    'Lineal Tangente': data[5],
+    'Lineal Logaritmo': data[6],
+    'Cuadrática Seno': data[7],
+    'Cuadrática Coseno': data[8],
+    'Cuadrática Tangente': data[9],
+    'Cuadrática Logaritmo': data[10]
+    }
+
+    # Convertir el diccionario a una lista de tuplas
+    r2_list = list(r2_values.items())
+
+    # Ordenar la lista de tuplas por el valor de r2
+    r2_list.sort(key=lambda x: x[1], reverse=True)
+
+    # Agregar Valores de prediccion
+    # Inicializar valores de x para prediccion
+    valores_prediccion = list(range(2024, 2034))
+
+    # Obtener g(x) en base a la ecuacion cubica (Prediccion de valores) 
+    for i in range(len(valores_prediccion)):
+
+        x = valores_prediccion[i]
+        
+        data[0].append((coeficientes[0][0] + coeficientes[0][1]*x))
+        data[1].append((coeficientes[1][0] + coeficientes[1][1]*x + coeficientes[1][2]*(x**2)))
+        data[2].append((coeficientes[2][0] + coeficientes[2][1]*x + coeficientes[2][2]*(x**2) + coeficientes[2][3]*(x**3)))
+
+        data[3].append((coeficientes[3][0] + coeficientes[3][1]*x + coeficientes[3][2]*(math.sin(x))))
+        data[4].append((coeficientes[4][0] + coeficientes[4][1]*x + coeficientes[4][2]*(math.cos(x))))
+        data[5].append((coeficientes[5][0] + coeficientes[5][1]*x + coeficientes[5][2]*(math.tan(x))))
+        data[6].append((coeficientes[6][0] + coeficientes[6][1]*x + coeficientes[6][2]*(math.log(x))))
+
+        data[7].append((coeficientes[7][0] + coeficientes[7][1]*x + coeficientes[7][2]*(x**2) + coeficientes[7][3]*(math.sin(x))))
+        data[8].append((coeficientes[8][0] + coeficientes[8][1]*x + coeficientes[8][2]*(x**2) + coeficientes[8][3]*(math.cos(x))))
+        data[9].append((coeficientes[9][0] + coeficientes[9][1]*x + coeficientes[9][2]*(x**2) + coeficientes[9][3]*(math.tan(x))))
+        data[10].append((coeficientes[10][0] + coeficientes[10][1]*x + coeficientes[10][2]*(x**2) + coeficientes[10][3]*(math.log(x))))
+
+    # Crear un Canvas y un Frame para las tablas
+    canvas = tk.Canvas(frame_arriba)
+    scroll_y = tk.Scrollbar(root, orient='vertical', command=canvas.yview)
+
+    frame = tk.Frame(canvas)
+
+    # Configurar el Canvas y el Frame con la barra de desplazamiento
+    frame_id = canvas.create_window(0, 0, anchor='nw', window=frame)
+    canvas.configure(yscrollcommand=scroll_y.set)
+
+    create_first_table(frame, "Datos Historicos Originales", 1, valores_x, valores_y)
+
+    primera_iteracion = True  # Variable de bandera para la primera iteracion
+    selected = None
+    # Iterar sobre la lista de modelos y R² y crear una tabla para cada uno
+    for nombre, r2 in r2_list:
+        if primera_iteracion:
+            selected = nombre
+            create_table(frame, nombre, r2, valores_x, valores_ecuaciones[nombre])
+            primera_iteracion = False  # Cambia la bandera después de la primera iteracion
+        else:
+            create_table(frame, nombre, r2, valores_x, valores_ecuaciones[nombre])
+
+    # Actualizar la configuración del canvas para que se ajuste a los contenidos del frame
+    frame.update_idletasks()
+    canvas.config(scrollregion=canvas.bbox('all'))
+
+    # Empaquetar el canvas y el scrollbar
+    canvas.pack(fill='both', expand=True, side='left')
+    scroll_y.pack(fill='y', side='right')
+
+    actualizar_graficas(valores_x, valores_y, valores_prediccion, valores_ecuaciones[selected])
+
+def create_table(frame, nombre, r2, valores_x, values):
+    # Crear un marco para contener el nombre, r2 y la tabla
+    inner_frame = tk.Frame(frame, pady=10)
+    inner_frame.pack(fill='x', padx=10, pady=5)
+
+    # Mostrar el nombre del modelo
+    label_nombre = tk.Label(inner_frame, text=nombre, font=('Arial', 14))
+    label_nombre.pack(anchor='w')
+
+    # Mostrar el valor de R²
+    label_r2 = tk.Label(inner_frame, text=f'R²: {r2}', font=('Arial', 12))
+    label_r2.pack(anchor='w')
+
+    # Crear un Treeview para mostrar la tabla
+    tree = ttk.Treeview(inner_frame, columns=('x', 'y'), show='headings')
+    tree.heading('x', text='x')
+    tree.heading('y', text='y')
+    tree.pack(fill='x', expand=True)
+
+    # Determina la longitud máxima
+    max_length = len(values)
+    max_x = len(valores_x)
+
+    r = 0
+    for i in range(max_x):
+        # Usa '?' si los índices i están fuera del rango de las listas más cortas
+        x = valores_x[i] 
+        g = values[i]
+        tree.insert('', 'end', values=(x, g))
+        r = i+1
+
+    print(r)
+    for i in range(r, max_length):
+        ultimo_valor = valores_x[-1]
+        # Usa '?' si los índices i están fuera del rango de las listas más cortas
+        x = valores_x[0] + i
+        g = values[i]
+        tree.insert('', 'end', values=(x, g))
+
+def create_first_table(frame, nombre, r2, valores_x, values):
+    # Crear un marco para contener el nombre, r2 y la tabla
+    inner_frame = tk.Frame(frame, pady=10)
+    inner_frame.pack(fill='x', padx=10, pady=5)
+
+    # Mostrar el nombre del modelo
+    label_nombre = tk.Label(inner_frame, text=nombre, font=('Arial', 14))
+    label_nombre.pack(anchor='w')
+
+    # Mostrar el valor de R²
+    label_r2 = tk.Label(inner_frame, text=f'R²: {r2}', font=('Arial', 12))
+    label_r2.pack(anchor='w')
+
+    # Crear un Treeview para mostrar la tabla
+    tree = ttk.Treeview(inner_frame, columns=('x', 'y'), show='headings')
+    tree.heading('x', text='x')
+    tree.heading('y', text='y')
+    tree.pack(fill='x', expand=True)
+
+    # Determina la longitud máxima
+    max_length = len(values)
+
+    for i in range(max_length):
+        # Usa '?' si los índices i están fuera del rango de las listas más cortas
+        x = valores_x[i]
+        g = values[i]
+        tree.insert('', 'end', values=(x, g))
+
 
 def actualizar_graficas(valores_x, valores_y, valores_prediccion, valores_gx):
     # Actualizar datos de las gráficas
@@ -247,32 +408,21 @@ frame_padre.rowconfigure(0, weight=5)
 frame_padre.rowconfigure(1, weight=1)
 
 
-# Crear el primer frame hijo (izquierda)
+# Crear el primer frame hijo (Arriba)
 
-frame_izquierda = tk.Frame(frame_padre)
-frame_izquierda.grid(row=0, column=0, sticky="nsew")  # Se expande en todas las direcciones
-text = ScrolledText(frame_izquierda, state='disable', width=0)  # Ancho ajustado
-text.pack(padx=20, pady=20, fill="both", expand=True, anchor="w")  # Alineado hacia la izquierda
+frame_arriba = tk.Frame(frame_padre)
+frame_arriba.grid(row=0, column=0, sticky="nsew")  # Se expande en todas las direcciones
 
+# Crear el segundo frame hijo (Abajo)
 
-frame = tk.Frame(text) # Crear un frame dentro de la ScrolledText
-text.window_create('1.0', window=frame)
-# Títulos de las columnas
-titulo_columna_1 = tk.Label(frame, text="Año", highlightthickness=2, highlightbackground="black")
-titulo_columna_1.grid(row=0, column=0, sticky='w')
-titulo_columna_2 = tk.Label(frame, text="Valor", highlightthickness=2, highlightbackground="black")
-titulo_columna_2.grid(row=0, column=1, sticky='w')
-#
-# Crear el segundo frame hijo (derecha)
-
-frame_derecha = tk.Frame(frame_padre, bg="blue")
-frame_derecha.grid(row=1, column=0, sticky="nsew")  # Se expande en todas las direcciones
+frame_abajo = tk.Frame(frame_padre, bg="blue")
+frame_abajo.grid(row=1, column=0, sticky="nsew")  # Se expande en todas las direcciones
 
 # Crear un botón para abrir el navegador de archivos
-boton_abrir = tk.Button(frame_derecha, text="Abrir Archivo", command=abrir_archivo)
+boton_abrir = tk.Button(frame_abajo, text="Abrir Archivo", command=abrir_archivo)
 boton_abrir.pack(fill="both", expand=True)
 
-button2 = tk.Button(frame_derecha, text="Reiniciar", command=limpiar_tabla)
+button2 = tk.Button(frame_abajo, text="Reiniciar", command=limpiar_tabla)
 button2.pack(fill="both", expand=True)
 
 # PREDICTIONS DESIGN ########################################################################

@@ -1,0 +1,5 @@
+1. obtener todos los datos necessarios a partir de input
+2. retornarlos como una lista en donde cada elemento es una matriz
+3. introducir cada matriz como parametro a funcion montante
+4. almacenar listas de coeficientes como retorno a la funcion main
+5. 
