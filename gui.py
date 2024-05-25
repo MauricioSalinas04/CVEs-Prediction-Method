@@ -254,42 +254,42 @@ def create_first_table(frame, nombre, r2, valores_x, values):
 def actualizar_graficas(valores_x, valores_y, valores_prediccion, valores_gx):
     # Actualizar datos de las gráficas
     ax4.clear()
-    ax4.bar(valores_x, valores_y)
-    ax4.bar(valores_x + valores_prediccion, valores_gx)
+    ax4.bar(valores_x, valores_y, label='Original', color='red')
+    ax4.bar(valores_x + valores_prediccion, valores_gx, label='Ajustada', color='green')
     ax4.set_title("Prediccion de CVEs")
-    ax4.set_xlabel("Años")
-    ax4.set_ylabel("CVEs")
+    ax4.set_xlabel("X")
+    ax4.set_ylabel("Y")
+    ax4.legend()
 
     ax2.clear()
-    ax2.scatter(valores_x, valores_y)
-    ax2.scatter(valores_x + valores_prediccion, valores_gx)
+    ax2.scatter(valores_x, valores_y, label='Original', color='red')
+    ax2.scatter(valores_x + valores_prediccion, valores_gx, label='Ajustada', color='green')
     ax2.set_title("Gráfica de Dispersión de CVEs")
-    ax2.set_xlabel("Años")
-    ax2.set_ylabel("CVEs")
+    ax2.set_xlabel("X")
+    ax2.set_ylabel("Y")
+    ax2.legend()
 
     ax3.clear()
-    ax3.fill_between(valores_x, valores_y)
-    ax3.fill_between(valores_x + valores_prediccion, valores_gx)
+    ax3.fill_between(valores_x + valores_prediccion, valores_gx, label='Ajustada', color='green')
+    ax3.fill_between(valores_x, valores_y, label='Original', color='red')
     ax3.set_title("Prediccion de CVEs")
-    ax3.set_xlabel("Años")
-    ax3.set_ylabel("CVEs")
+    ax3.set_xlabel("X")
+    ax3.set_ylabel("Y")
+    ax3.legend()
 
     ax1.clear()
-    ax1.plot(valores_x, valores_y)
-    # Creacion Linea Naranja (Funcion Ajustada)
-    ax1.plot(valores_x + valores_prediccion, valores_gx)
-    ax1.set_title("Prediccion de CVEs")
-    ax1.set_xlabel("Años")
-    ax1.set_ylabel("CVEs")
+    ax1.plot(valores_x + valores_prediccion, valores_gx, label='Ajustada', linestyle='--', color='green')
+    ax1.plot(valores_x, valores_y, label='Original', color='red')
+    ax1.set_title("Ajuste y prediccion de datos")
+    ax1.set_xlabel("X")
+    ax1.set_ylabel("Y")
+    ax1.legend()
 
     # Redibujar los widgets de lienzo
     canvas1.draw()
     canvas2.draw()
     canvas3.draw()
     canvas4.draw()
-
-    print(valores_x)
-    print(valores_y)
 
 def exportar_a_pdf():
     file_path = filedialog.asksaveasfilename(defaultextension=".pdf",
@@ -380,19 +380,10 @@ texto_cve = tk.Text(frame_info, wrap="word", width=60, height=10)
 texto_cve.pack(pady=5)
 
 # Insertar texto en negrita para el título
-texto_negrita(texto_cve, "CVEs (Common Vulnerabilities and Exposures)\n")
+texto_negrita(texto_cve, "Minimos Cuadrados: Implementacion de Ajuste y Prediccion\n")
 # Insertar texto normal
-texto_cve.insert("end", "son una lista de entradas—cada una conteniendo un número de identificación, una descripción y al menos una referencia pública—para vulnerabilidades de seguridad conocidas públicamente. El propósito de CVE es facilitar el intercambio de información sobre vulnerabilidades de seguridad en toda la industria y la comunidad de TI. Cada CVE está identificado por un ID único, que ayuda a los profesionales de seguridad y a los administradores de sistemas a acceder rápidamente a la información técnica sobre una vulnerabilidad específica, sus riesgos asociados y posibles soluciones o parches.\n\n")
+texto_cve.insert("end", "Este proyecto esta construido enteramente con python, utilizando librerias como matplotlib y tkinter para el diseño de interfaz y creacion de graficos en base a listas obtenidas de funciones matematicas, las cuales obtenemos mediante ecuaciones contruidas con coeficientes resultantes de la resolucion de matrices mediante montante.\n\n")
 
-# Texto sobre NIST
-texto_nist = tk.Text(frame_info, wrap="word", width=60, height=10)
-texto_nist.pack(pady=5)
-
-# Insertar texto en negrita para el título
-texto_negrita(texto_nist, "NIST (National Institute of Standards and Technology)\n")
-# Insertar texto normal
-texto_nist.insert("end", "es una agencia del Departamento de Comercio de los Estados Unidos que tiene el mandato de promover la innovación y la competitividad industrial. NIST lleva a cabo investigaciones y proporciona estándares y mediciones para mejorar la eficiencia, la infraestructura y la seguridad de las industrias y servicios. En el contexto de la ciberseguridad, el NIST es bien conocido por desarrollar y publicar estándares y guías que ayudan a proteger los sistemas de información contra amenazas y vulnerabilidades, como su famoso Framework para la Mejora de la Ciberseguridad.\n\n")
-# INPUT DESIGN ###########################################################################
 
 # Crear el frame padre
 frame_padre = tk.Frame(pagina2)
